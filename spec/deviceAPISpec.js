@@ -20,20 +20,24 @@ describe("deviceTestCtrl",function(){
 			device.service.resources.devices.get=function(query,headers){
 				if(headers.headers.Authorization==="valid" && headers.headers.Accept==="valid"){
 					res.body=['asus','msi','corsair'];
+					res.status=200;
 				}
 				else if(headers.authorization==="invalid"){
-					res.body.status=401;
+					res.status=401;
 				}
 				else if(headers.accept==="invalid"){
-					res.body.status=406
+					res.status=406
 				}
-				return res;
+				return {
+					then: function(callback) { return callback(res) }
+				}
 			};
 		});
 
 		it("gets an array of all devices",function(){
-			console.log(device.service.resources.devices.get(null,{headers:device.headers}));
+			// console.log(device.service.resources.devices.get(null,{headers:device.headers}));
 			device.getAll();
+			scope.$digest();
 			expect(device.result).toEqual(['asus','msi','corsair']);
 		});
 

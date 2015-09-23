@@ -38,11 +38,11 @@
     device.getAll = function(){
       device.service.resources.devices.get(null,{headers:device.headers})
       .then(function(res){
-        if(res.body.status===401){
+        if(res.status===401){
           device.error="Invalid token."
           $scope.$apply();
         }
-        else if(req.body.status!==200){
+        else if(res.status!==200){
           device.error="There was an error."
           $scope.$apply();
         }
@@ -56,11 +56,11 @@
     device.getByQuery = function(query){
       device.service.resources.devices.get(query,{headers:device.headers})
       .then(function(res){
-        if(res.body.status===401){
+        if(res.status===401){
           device.error="Invalid token."
           $scope.$apply();
         }
-        else if(req.body.status!==200){
+        else if(res.status!==200){
           device.error="There was an error."
           $scope.$apply();
         }
