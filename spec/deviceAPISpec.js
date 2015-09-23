@@ -10,48 +10,59 @@ describe("deviceTestCtrl",function(){
 	describe("device.getAll",function(){
 		var scope = {},
 		    controller,
-		    res={};
+		    res={},
+        promiseBuilder;
+
 		beforeEach(function(){
 			scope = $rootScope.$new();
 			device = $controller('deviceTestCtrl', {$scope: scope});
-			//mock the API
-			device.service.resources.devices.get=function(query,headers){
-				if(headers.headers.Authorization==="valid" && headers.headers.Accept==="valid"){
-					res.body=['asus','msi','corsair'];
-					res.status=200;
-				}
-				else if(headers.headers.Authorization==="invalid"){
-					console.log('test');
-					res.status=401;
-				}
-				else if(headers.headers.Accept==="invalid"){
-					res.status=406;
 
-				}
-				return {
-					then: function(callback) { return callback(res) }
-				}
-			};
+      promiseBuilder = function (response) {
+        return { then: function (callback) { return callback(response); } };
+      };
 		});
 
-		it("gets an array of all devices",function(){
-			device.headers={Authorization:"valid",Accept:"valid"};
-			device.getAll();
-			scope.$digest();
-			expect(device.result).toEqual(['asus','msi','corsair']);
-		});
-		it("responds to an invalid token",function(){
-			device.headers={Authorization:"invalid",Accept:"valid"};
-			device.getAll();
-			scope.$digest();
-			expect(device.error).toEqual("Invalid token.");
-		});
-		it("responds to an invalid accept header",function(){
-			device.headers={Authorization:"valid",Accept:"invalid"};
-			device.getAll();
-			scope.$digest();
-			expect(device.error).toEqual("There was an error.");
-		})
+    describe('with a 200 response', function () {
+      beforeEach(function () {
+        var response = { body: ['asus', 'msi', 'corsair'], status: 200 };
+        var then = promiseBuilder(response);
+        spyOn(device.service.resources.devices, 'get').and.returnValue(then);
+      });
+
+      it("gets an array of all devices",function(){
+        device.getAll();
+        scope.$digest();
+        expect(device.result).toEqual(['asus','msi','corsair']);
+      });
+    });
+
+    describe('with a 401 response', function () {
+      beforeEach(function () {
+        var response = { status: 401 };
+        var then = promiseBuilder(response);
+        spyOn(device.service.resources.devices, 'get').and.returnValue(then);
+      });
+
+      it("responds to an invalid token",function(){
+        device.getAll();
+        scope.$digest();
+        expect(device.error).toEqual("Invalid token.");
+      });
+    });
+
+    describe('with a 406 response', function () {
+      beforeEach(function () {
+        var response = { status: 406 };
+        var then = promiseBuilder(response);
+        spyOn(device.service.resources.devices, 'get').and.returnValue(then);
+      });
+
+      it("responds to an invalid accept header",function(){
+        device.getAll();
+        scope.$digest();
+        expect(device.error).toEqual("There was an error.");
+      });
+    });
 
 	});
 
