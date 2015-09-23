@@ -14,19 +14,19 @@ describe("deviceTestCtrl",function(){
 		beforeEach(function(){
 			scope = $rootScope.$new();
 			device = $controller('deviceTestCtrl', {$scope: scope});
-			//initialize the headers as vaild
-			device.headers={Authorization:"valid",Accept:"valid"};
 			//mock the API
 			device.service.resources.devices.get=function(query,headers){
 				if(headers.headers.Authorization==="valid" && headers.headers.Accept==="valid"){
 					res.body=['asus','msi','corsair'];
 					res.status=200;
 				}
-				else if(headers.authorization==="invalid"){
+				else if(headers.headers.Authorization==="invalid"){
+					console.log('test');
 					res.status=401;
 				}
-				else if(headers.accept==="invalid"){
-					res.status=406
+				else if(headers.headers.Accept==="invalid"){
+					res.status=406;
+
 				}
 				return {
 					then: function(callback) { return callback(res) }
@@ -35,11 +35,23 @@ describe("deviceTestCtrl",function(){
 		});
 
 		it("gets an array of all devices",function(){
-			// console.log(device.service.resources.devices.get(null,{headers:device.headers}));
+			device.headers={Authorization:"valid",Accept:"valid"};
 			device.getAll();
 			scope.$digest();
 			expect(device.result).toEqual(['asus','msi','corsair']);
 		});
+		it("responds to an invalid token",function(){
+			device.headers={Authorization:"invalid",Accept:"valid"};
+			device.getAll();
+			scope.$digest();
+			expect(device.error).toEqual("Invalid token.");
+		});
+		it("responds to an invalid accept header",function(){
+			device.headers={Authorization:"valid",Accept:"invalid"};
+			device.getAll();
+			scope.$digest();
+			expect(device.error).toEqual("There was an error.");
+		})
 
 	});
 
